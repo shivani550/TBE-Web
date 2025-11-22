@@ -41,7 +41,7 @@ export function Navbar() {
         }
     }
 
-        const getInitials = (name: string = "") => {
+        const getInitials = (name: string) => {
         return name
             .trim()
             .split(" ")
