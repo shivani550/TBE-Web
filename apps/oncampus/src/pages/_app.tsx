@@ -12,7 +12,7 @@ import type { AppProps } from 'next/app';
 import { useRouter } from 'next/router';
 import { SessionProvider } from 'next-auth/react';
 import { Fragment, useEffect, useState } from 'react';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import DashboardLayout from '@/components/DashboardLayout';
 
 // Create a client
