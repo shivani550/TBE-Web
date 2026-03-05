@@ -30,36 +30,59 @@ const MDXRenderer = ({ mdxSource, actions, theme = 'light' }: MDXRendererProps) 
     if (!src) return '';
     let out = src;
 
-    // 1) Fix headings that have #### at both ends (weird formatting)
-    // Example: "#### text #### comment" -> "#### text" (heading) + "comment" (text)
-    out = out.replace(/^(#{1,6})\s+([^#\n]+?)\s+(#{1,6})\s+([^\n]+)$/gm, (match, h1, text, h2, comment) => {
-      // If both are same level, treat first as heading and second part as regular text
-      if (h1 === h2) {
-        return `${h1} ${text.trim()}\n\n${comment.trim()}`;
+    // IMPORTANT: First, identify lines inside code fences so we skip them
+    // during heading normalization. This prevents Python comments (# ...) or
+    // Node.js comments from being treated as markdown headings.
+    const lines = out.split('\n');
+    let insideFence = false;
+    const isCodeLine: boolean[] = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const trimmed = lines[i]?.trim() || '';
+      if (trimmed.startsWith('```')) {
+        insideFence = !insideFence;
+        isCodeLine.push(true); // fence markers are also "code"
+      } else {
+        isCodeLine.push(insideFence);
       }
-      return match;
+    }
+
+    // 1) Fix headings that have #### at both ends (weird formatting)
+    // Only process non-code lines
+    const processedLines = lines.map((line, idx) => {
+      if (isCodeLine[idx]) return line; // skip code lines
+
+      // Fix headings with #### at both ends
+      const dualHeadingMatch = line.match(/^(#{1,6})\s+([^#\n]+?)\s+(#{1,6})\s+([^\n]+)$/);
+      if (dualHeadingMatch && dualHeadingMatch[1] === dualHeadingMatch[3]) {
+        return `${dualHeadingMatch[1]} ${dualHeadingMatch[2].trim()}\n\n${dualHeadingMatch[4].trim()}`;
+      }
+
+      return line;
     });
+    out = processedLines.join('\n');
 
     // 2) Fix duplicate code fences (e.g., "```python\n\n```python" -> "```python")
-    // Handle cases with blank lines between duplicate fences
     out = out.replace(/```(\w+)\s*\n\s*\n\s*```(\w+)/g, '```$1');
     out = out.replace(/```(\w+)\s*\n\s*```(\w+)/g, '```$1');
-    // Also handle cases where same language appears twice consecutively
     out = out.replace(/```(\w+)\s*\n([\s\S]*?)\n```\s*\n\s*```\1\s*\n/g, '```$1\n$2\n```\n');
 
     // 3) Headings: CommonMark supports only 1..6 #'s.
-    // Convert 7+ to 3 (nice visual divider) so they render as headings.
-    // Example: "########### Title" -> "### Title"
-    out = out.replace(/^(#{7,})\s+/gm, '### ');
+    // Convert 7+ to 3 — but only outside code blocks
+    out = out.split('\n').map((line, idx) => {
+      if (isCodeLine[idx]) return line;
+      return line.replace(/^(#{7,})\s+/, '### ');
+    }).join('\n');
 
-    // 4) Ensure headings with emojis are properly formatted (no space issues)
-    // Fix cases like "##### 💡 Title" to ensure proper parsing
-    out = out.replace(/^(#{1,6})\s+([^\n]+)/gm, (match, hashes, content) => {
-      // Remove any trailing #### that might be in the content
-      const cleaned = content.trim().replace(/\s+#{1,6}\s*$/, '');
-      // Ensure there's a space after hashes and content is trimmed
-      return `${hashes} ${cleaned}`;
-    });
+    // 4) Ensure headings with emojis are properly formatted
+    // ONLY outside code blocks
+    out = out.split('\n').map((line, idx) => {
+      if (isCodeLine[idx]) return line;
+      return line.replace(/^(#{1,6})\s+([^\n]+)/, (match, hashes, content) => {
+        const cleaned = content.trim().replace(/\s+#{1,6}\s*$/, '');
+        return `${hashes} ${cleaned}`;
+      });
+    }).join('\n');
 
     // 4.5) Ensure bold syntax is properly formatted and recognized
     // Fix cases where ** might not be properly recognized (especially at start of line/paragraph)
