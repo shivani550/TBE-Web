@@ -147,30 +147,30 @@ const DsaPrepWorkspace = ({
                       className="border-gray-800 text-gray-400 bg-transparent hover:border-red-500 hover:bg-red-500/10 shrink-0 py-[3px] px-[8px] h-auto text-[10px] font-bold uppercase tracking-wide whitespace-nowrap"
                     />
                   )}
-                {currentTopicConfig?.hasStudyGuide && (
-                  <button
-                    onClick={handleToggleStudyGuide}
-                    className={cn(
-                      "flex items-center justify-center w-[30px] h-[30px] rounded-[6px] border-[0.5px] transition-all duration-300 flex-shrink-0",
-                      isStudyGuideOpen
-                        ? "bg-red-500/15 border-red-500/50 text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.25)] scale-105"
-                        : "bg-red-500/[0.04] border-red-500/20 text-red-400 group-hover:border-red-500/40 hover:text-red-300 shadow-[0_0_8px_rgba(239,68,68,0.1)]",
-                    )}
-                    title={
-                      isStudyGuideOpen
-                        ? "Back to Questions"
-                        : "Open Study Guide"
-                    }
-                  >
-                    <BookOpen
+                  {currentTopicConfig?.hasStudyGuide && (
+                    <button
+                      onClick={handleToggleStudyGuide}
                       className={cn(
-                        "w-[16px] h-[16px] transition-all duration-300",
-                        isStudyGuideOpen ? "scale-110" : "",
+                        "flex items-center justify-center w-[30px] h-[30px] rounded-[6px] border-[0.5px] transition-all duration-300 flex-shrink-0",
+                        isStudyGuideOpen
+                          ? "bg-red-500/15 border-red-500/50 text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.25)] scale-105"
+                          : "bg-red-500/[0.04] border-red-500/20 text-red-400 group-hover:border-red-500/40 hover:text-red-300 shadow-[0_0_8px_rgba(239,68,68,0.1)]",
                       )}
-                      strokeWidth={2}
-                    />
-                  </button>
-                  </div>
+                      title={
+                        isStudyGuideOpen
+                          ? "Back to Questions"
+                          : "Open Study Guide"
+                      }
+                    >
+                      <BookOpen
+                        className={cn(
+                          "w-[16px] h-[16px] transition-all duration-300",
+                          isStudyGuideOpen ? "scale-110" : "",
+                        )}
+                        strokeWidth={2}
+                      />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -322,7 +322,6 @@ const DsaPrepWorkspace = ({
                             preparation journey.
                           </Text>
                         </div>
-                      </div>
                       </div>
                     </FlexContainer>
                   </div>
