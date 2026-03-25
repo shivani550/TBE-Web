@@ -9,11 +9,11 @@ import {
   SEO,
   Text,
 } from "@tbe/components";
-import { DSA_STUDY_GUIDE_CONFIGS, routes, TOPIC_LABELS } from "@tbe/constants";
+import { DSA_STUDY_GUIDE_CONFIGS, routes } from "@tbe/constants";
 import {
   useDsaCompletedQuestions,
-  useDsaQuestions,
-  useDsaTopics,
+  useDsaQuestionsForTopic,
+  useDsaTopicSummaries,
   useUser,
 } from "@tbe/hooks";
 import type { DsaQuestion, PageProps, UserProfile } from "@tbe/interface";
@@ -36,12 +36,11 @@ const SheetsPageClient = () => {
   const [isProfileLoading, setIsProfileLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const { questions, loading: sheetsLoading } = useDsaQuestions();
+  const { data: topicsWithCounts, isLoading: topicsLoading } =
+    useDsaTopicSummaries();
   const { completedIds, toggleComplete } = useDsaCompletedQuestions();
-  const { topicsWithCounts, topicsCompletionMap } = useDsaTopics(
-    questions,
-    completedIds,
-  );
+  const { questions, loading: questionsLoading } =
+    useDsaQuestionsForTopic(selectedTopic);
 
   useEffect(() => {
     if (user?.id) {
@@ -84,7 +83,11 @@ const SheetsPageClient = () => {
     setSelectedQuestion(null);
   };
 
-  if (sheetsLoading || userLoading || isProfileLoading) {
+  if (questionsLoading && !questions && selectedTopic) {
+    // If we're loading specific questions after topic select, it's fine
+  }
+
+  if (topicsLoading || userLoading || isProfileLoading) {
     return (
       <div className="flex flex-col min-h-screen bg-[#0A0A0A] font-sans items-center justify-center">
         <div className="flex items-center">
@@ -167,14 +170,13 @@ const SheetsPageClient = () => {
   return (
     <LearningEnvironmentLayout backHref="/dashboard" layoutMode="workspace">
       <DsaPrepWorkspace
-        questions={questions}
-        topicsWithCounts={topicsWithCounts}
+        questions={questions || []}
+        topicsWithCounts={topicsWithCounts || []}
         selectedTopic={selectedTopic}
         selectedQuestion={selectedQuestion}
         onTopicClick={handleTopicClick}
         onQuestionClick={handleQuestionClick}
         onBackToTopics={handleBackToTopics}
-        completionMap={topicsCompletionMap}
         completedQuestionIds={completedIds}
         onToggleComplete={toggleComplete}
         studyGuideConfigs={DSA_STUDY_GUIDE_CONFIGS}
