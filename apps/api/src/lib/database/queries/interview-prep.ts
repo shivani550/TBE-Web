@@ -695,49 +695,39 @@ const getAllDSAQuestionsFromDB = async (
 const getDSATopicSummariesFromDB =
   async (): Promise<DatabaseQueryResponseType> => {
     try {
-      const rows = await DSAQuestion.aggregate<{
-        _id: string;
-        count: number;
-      }>([
-        {
-          $project: {
-            primaryTopic: { $arrayElemAt: ["$topics", 0] },
-          },
-        },
-        {
-          $match: {
-            primaryTopic: { $exists: true, $nin: [null, ""] },
-          },
-        },
+      const rows = await DSAQuestion.aggregate([
+        { $unwind: "$topics" },
         {
           $group: {
-            _id: "$primaryTopic",
+            _id: "$topics",
             count: { $sum: 1 },
           },
         },
       ]);
 
-      const orderMap = new Map<string, number>(
-        [...DSA_TOPICS].map((topicId, index) => [topicId, index]),
-      );
+      if (!rows || rows.length === 0) {
+        return { data: { topics: [] } };
+      }
 
       const topics = rows
         .map((row) => ({
-          topic: row._id as DSATopicType,
+          topic: (row._id as string).toUpperCase(),
           count: row.count,
         }))
+        .filter((t) => t.topic)
         .sort((a, b) => {
-          const ia = orderMap.get(a.topic as string) ?? 999;
-          const ib = orderMap.get(b.topic as string) ?? 999;
-          if (ia !== ib) return ia - ib;
-          return (a.topic as string).localeCompare(b.topic as string);
+          const idxA = DSA_TOPICS.indexOf(a.topic as DSATopicType);
+          const idxB = DSA_TOPICS.indexOf(b.topic as DSATopicType);
+          if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+          if (idxA !== -1) return -1;
+          if (idxB !== -1) return 1;
+          return a.topic.localeCompare(b.topic);
         });
 
       return { data: { topics } };
     } catch (error) {
       logger.error("DB: getDSATopicSummariesFromDB failed", {
         error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
       });
       return { error: "Failed to fetch DSA topic summaries", details: error };
     }
