@@ -1,4 +1,4 @@
-import { modelSelectParams } from "@/lib/constants";
+import { DSA_TOPICS, modelSelectParams } from "@/lib/constants";
 import type {
   AddInterviewQuestionRequestPayloadProps,
   AddInterviewSheetRequestPayloadProps,
@@ -6,6 +6,7 @@ import type {
   DatabaseQueryResponseType,
   DSADifficultyType,
   DSADomainType,
+  DSATopicType,
   SheetEnrollmentRequestProps,
   UpdateDSAQuestionRequestPayloadProps,
   UpdateInterviewSheetRequestPayloadProps,
@@ -690,6 +691,57 @@ const getAllDSAQuestionsFromDB = async (
   }
 };
 
+/** Topic list + counts using primary topic only (topics[0]), for lightweight sheet landing. */
+const getDSATopicSummariesFromDB =
+  async (): Promise<DatabaseQueryResponseType> => {
+    try {
+      const rows = await DSAQuestion.aggregate<{
+        _id: string;
+        count: number;
+      }>([
+        {
+          $project: {
+            primaryTopic: { $arrayElemAt: ["$topics", 0] },
+          },
+        },
+        {
+          $match: {
+            primaryTopic: { $exists: true, $nin: [null, ""] },
+          },
+        },
+        {
+          $group: {
+            _id: "$primaryTopic",
+            count: { $sum: 1 },
+          },
+        },
+      ]);
+
+      const orderMap = new Map<string, number>(
+        [...DSA_TOPICS].map((topicId, index) => [topicId, index]),
+      );
+
+      const topics = rows
+        .map((row) => ({
+          topic: row._id as DSATopicType,
+          count: row.count,
+        }))
+        .sort((a, b) => {
+          const ia = orderMap.get(a.topic as string) ?? 999;
+          const ib = orderMap.get(b.topic as string) ?? 999;
+          if (ia !== ib) return ia - ib;
+          return (a.topic as string).localeCompare(b.topic as string);
+        });
+
+      return { data: { topics } };
+    } catch (error) {
+      logger.error("DB: getDSATopicSummariesFromDB failed", {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      return { error: "Failed to fetch DSA topic summaries", details: error };
+    }
+  };
 const getDSASheetMetadataFromDB =
   async (): Promise<DatabaseQueryResponseType> => {
     try {
@@ -901,6 +953,7 @@ export {
   getDSAQuestionByIDFromDB,
   getDSAQuestionsGroupedByTopic,
   getDSASheetMetadataFromDB,
+  getDSATopicSummariesFromDB,
   getEnrolledSheetFromDB,
   getInterviewSheetByIDFromDB,
   getInterviewSheetBySlugFromDB,

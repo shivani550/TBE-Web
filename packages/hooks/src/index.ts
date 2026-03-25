@@ -19,6 +19,8 @@ export { default as useDsaCompletedQuestions } from "./useDsaCompletedQuestions"
 export { default as useDsaQuestions } from "./useDsaQuestions";
 export type { TopicWithCount } from "./useDsaTopics";
 export { default as useDsaTopics } from "./useDsaTopics";
+export { useDsaTopicSummaries } from "./useDsaTopicSummaries";
+export { useDsaQuestionsForTopic } from "./useDsaQuestionsForTopic";
 export * from "./useInstallPrompt";
 export { default as useLeaderboard } from "./useLeaderboard";
 export { default as useMediaQuery } from "./useMediaQuery";
