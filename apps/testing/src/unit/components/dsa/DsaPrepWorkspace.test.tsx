@@ -69,7 +69,7 @@ describe("DsaPrepWorkspace", () => {
     render(<DsaPrepWorkspace {...defaultProps} />);
 
     expect(screen.getByText("Explore Topics")).toBeInTheDocument();
-    expect(screen.getByText(/Choose a topic to practice/i)).toBeInTheDocument();
+    expect(screen.getByText(/Choose a topic/i)).toBeInTheDocument();
     expect(screen.getByText("Array")).toBeInTheDocument();
     expect(screen.getByText("Stack")).toBeInTheDocument();
   });
@@ -115,7 +115,9 @@ describe("DsaPrepWorkspace", () => {
   it("should render empty state when no topic is selected", () => {
     render(<DsaPrepWorkspace {...defaultProps} />);
 
-    expect(screen.getByText(/Pick a topic on the left/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Select a topic to start practicing/i),
+    ).toBeInTheDocument();
   });
 
   it("should render custom empty state content", () => {
