@@ -1,9 +1,12 @@
 import { TOPIC_LABELS } from "@tbe/constants";
-import type { TopicWithCount } from "@tbe/hooks";
-import type { DsaQuestion } from "@tbe/interface";
-import type { StudyGuideConfig } from "@tbe/interface";
+import { type TopicWithCount, useStudyGuideTopic } from "@tbe/hooks";
+import type {
+  DsaQuestion,
+  StudyGuideConfig,
+  StudyGuideModel,
+} from "@tbe/interface";
 import { cn } from "@tbe/utils";
-import { ArrowRight, BookOpen, Lightbulb } from "lucide-react";
+import { ArrowRight, BookOpen, Lightbulb, Sparkles } from "lucide-react";
 import { type ReactNode, useState } from "react";
 
 import Button from "../../common/Buttons/Button";
@@ -48,6 +51,9 @@ const DsaPrepWorkspace = ({
   studyGuideConfigs,
   className,
 }: DsaPrepWorkspaceProps) => {
+  const { data: studyGuideData, isLoading: isStudyGuideLoading } =
+    useStudyGuideTopic(selectedTopic || "");
+
   const [isStudyGuideOpen, setIsStudyGuideOpen] = useState(false);
   const [activeGuideSection, setActiveGuideSection] =
     useState("before-you-start");
@@ -188,7 +194,7 @@ const DsaPrepWorkspace = ({
               >
                 <Text
                   level="h1"
-                  className="text-[16px] font-bold text-white mb-0.5 tracking-tight"
+                  className="strong-text font-bold text-white mb-0.5 tracking-tight"
                 >
                   {selectedTopic
                     ? TOPIC_LABELS[selectedTopic] || selectedTopic
@@ -248,12 +254,26 @@ const DsaPrepWorkspace = ({
               </div>
             ) : (
               <div className="space-y-3">
-                {isStudyGuideOpen && currentTopicConfig ? (
-                  <StudyGuideNav
-                    config={currentTopicConfig}
-                    activeId={activeGuideSection}
-                    onSectionClick={setActiveGuideSection}
-                  />
+                {isStudyGuideOpen ? (
+                  currentTopicConfig ? (
+                    <StudyGuideNav
+                      config={currentTopicConfig}
+                      activeId={activeGuideSection}
+                      onSectionClick={setActiveGuideSection}
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-12 px-4 text-center gap-3">
+                      <Sparkles className="w-8 h-8 text-gray-800 animate-pulse opacity-30" />
+                      <Text
+                        level="p"
+                        className="text-[10px] font-black text-gray-600 uppercase tracking-widest leading-relaxed"
+                      >
+                        Navigation will be
+                        <br />
+                        available shortly
+                      </Text>
+                    </div>
+                  )
                 ) : (
                   <DsaQuestionList
                     questions={filteredQuestions}
@@ -274,10 +294,11 @@ const DsaPrepWorkspace = ({
             !selectedTopic ? "hidden lg:flex" : "flex",
           )}
         >
-          {isStudyGuideOpen && currentTopicConfig ? (
+          {isStudyGuideOpen && selectedTopic ? (
             <StudyGuideReader
-              topic={currentTopicConfig.topic}
+              topic={selectedTopic}
               sectionId={activeGuideSection}
+              data={studyGuideData as StudyGuideModel}
             />
           ) : (
             <div

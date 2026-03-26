@@ -14,7 +14,7 @@ import type {
 import { generateYouTubeSearchLink } from "@/lib/utils";
 import { logger } from "@/lib/utils/logger";
 
-import { DSAQuestion, InterviewSheet, UserSheet } from "../models";
+import { DSAQuestion, InterviewSheet, StudyGuide, UserSheet } from "../models";
 import { toObjectId } from "./common";
 import { updateUserPointsInDB } from "./gamification";
 
@@ -304,30 +304,34 @@ const getAllEnrolledSheetsFromDB = async (
       .exec();
 
     return {
-      data: enrolledSheets.map((userSheet) => {
-        const sheet = userSheet.sheet as any;
-        const totalQuestions = sheet?.questions?.length || 0;
-        const completedQuestions =
-          userSheet.questions?.filter((q: any) => q.isCompleted).length || 0;
-        const progressPercentage =
-          totalQuestions > 0
-            ? Math.round((completedQuestions / totalQuestions) * 100)
-            : 0;
+      data: enrolledSheets
+        .map((userSheet) => {
+          const sheet = userSheet.sheet as any;
+          const totalQuestions = sheet?.questions?.length || 0;
+          const completedQuestions =
+            userSheet.questions?.filter((q: any) => q.isCompleted).length || 0;
+          const progressPercentage =
+            totalQuestions > 0
+              ? Math.round((completedQuestions / totalQuestions) * 100)
+              : 0;
 
-        // Access updatedAt from the document (Mongoose adds it via timestamps)
-        const userSheetObj = userSheet.toObject() as any;
+          // Access updatedAt from the document (Mongoose adds it via timestamps)
+          const userSheetObj = userSheet.toObject() as any;
 
-        return {
-          ...sheet.toObject(),
-          isEnrolled: true,
-          lastUpdated: userSheetObj.updatedAt || userSheetObj.createdAt,
-          progress: {
-            completed: completedQuestions,
-            total: totalQuestions,
-            percentage: progressPercentage,
-          },
-        };
-      }),
+          if (!sheet) return null;
+
+          return {
+            ...sheet.toObject(),
+            isEnrolled: true,
+            lastUpdated: userSheetObj.updatedAt || userSheetObj.createdAt,
+            progress: {
+              completed: completedQuestions,
+              total: totalQuestions,
+              percentage: progressPercentage,
+            },
+          };
+        })
+        .filter(Boolean),
     };
   } catch (error) {
     logger.error("DB: getAllEnrolledSheetsFromDB failed", {
@@ -770,7 +774,7 @@ const addDSAQuestionToDB = async (questionPayload: {
   domain: DSADomainType[];
   difficulty: DSADifficultyType;
   companyTypes: string[];
-  topics: string[];
+  topics: DSATopicType[];
   order?: number;
   leetcodeLink?: string;
   youtubeSearchLink?: string;
@@ -783,7 +787,11 @@ const addDSAQuestionToDB = async (questionPayload: {
 
     const question = new DSAQuestion({
       ...questionPayload,
-      youtubeSearchLink,
+      resources: {
+        youtubeURL: youtubeSearchLink,
+        leetcodeURL: questionPayload.leetcodeLink || null,
+        blogURL: null,
+      },
     });
     await question.save();
     return { data: question };
@@ -838,6 +846,24 @@ const getDSAQuestionByIDFromDB = async (
       stack: error instanceof Error ? error.stack : undefined,
     });
     return { error: "Failed to fetch DSA question", details: error };
+  }
+};
+
+const getStudyGuideByTopicFromDB = async (
+  topicId: string,
+): Promise<DatabaseQueryResponseType> => {
+  try {
+    const studyGuide = await StudyGuide.findOne({ topicId });
+    if (!studyGuide) {
+      return { error: "Study guide not found" };
+    }
+    return { data: studyGuide };
+  } catch (error) {
+    logger.error("DB: getStudyGuideByTopicFromDB failed", {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    return { error: "Failed to fetch study guide", details: error };
   }
 };
 
@@ -948,6 +974,7 @@ export {
   getInterviewSheetByIDFromDB,
   getInterviewSheetBySlugFromDB,
   getStarredQuestionsFromDB,
+  getStudyGuideByTopicFromDB,
   markQuestionCompletedByUser,
   markQuestionStarredByUser,
   updateDSAQuestionInDB,

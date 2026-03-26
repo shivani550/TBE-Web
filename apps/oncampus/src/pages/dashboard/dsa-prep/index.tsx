@@ -4,15 +4,16 @@ import {
   LoadingSpinner,
   Text,
 } from "@tbe/components";
-import { DSA_STUDY_GUIDE_CONFIGS, routes, TOPIC_LABELS } from "@tbe/constants";
+import { DSA_STUDY_GUIDE_CONFIGS, routes } from "@tbe/constants";
 import {
+  useDsaCompletedQuestions,
   useDsaQuestionsForTopic,
   useDsaTopicSummaries,
   useUser,
 } from "@tbe/hooks";
 import type { DsaQuestion } from "@tbe/interface";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const DSAPrepPage = () => {
   const router = useRouter();
@@ -27,6 +28,21 @@ const DSAPrepPage = () => {
     useDsaTopicSummaries();
   const { questions, loading: questionsLoading } =
     useDsaQuestionsForTopic(selectedTopic);
+
+  const { completedIds, toggleComplete } = useDsaCompletedQuestions();
+
+  const topicsCompletionMap = useMemo(() => {
+    return (topicsWithCounts ?? []).reduce(
+      (acc, row) => {
+        acc[row.topic] = false;
+        return acc;
+      },
+      {} as Record<string, boolean>,
+    );
+  }, [topicsWithCounts]);
+
+  const pageLoading =
+    userLoading || topicsLoading || (!!selectedTopic && questionsLoading);
 
   useEffect(() => {
     if (!userLoading && !isAuth) {
