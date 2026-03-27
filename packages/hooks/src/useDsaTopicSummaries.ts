@@ -29,16 +29,17 @@ export const useDsaTopicSummaries = () => {
           return {
             topic,
             count,
-            label: TOPIC_LABELS[topic] || topic,
+            label: TOPIC_LABELS[topic],
           };
         })
+        .filter((row: any) => !!row.label)
         .sort((a, b) => {
           const keys = Object.keys(TOPIC_LABELS);
           const idxA = keys.indexOf(a.topic);
           const idxB = keys.indexOf(b.topic);
           if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-          return a.label.localeCompare(b.label);
-        });
+          return a.label!.localeCompare(b.label!);
+        }) as TopicWithCount[];
 
       return rows;
     },

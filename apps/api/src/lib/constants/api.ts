@@ -3080,9 +3080,7 @@ const DSA_DIFFICULTY: DSADifficultyType[] = ["EASY", "MEDIUM", "HARD"];
 
 const DSA_TOPICS: DSATopicType[] = [
   "ARRAY",
-  "PREFIX_SUM",
   "HASHMAP",
-  "TWO_POINTERS",
   "SLIDING_WINDOW",
   "BINARY_SEARCH",
   "SORTING",
@@ -3093,20 +3091,15 @@ const DSA_TOPICS: DSATopicType[] = [
   "BINARY_TREE",
   "BST",
   "GRAPH",
-  "DFS",
-  "BFS",
   "BACKTRACKING",
   "DYNAMIC_PROGRAMMING",
   "GREEDY",
   "STRING",
   "MATH",
-  "BIT_MANIPULATION",
   "TRIE",
   "HEAP",
   "UNION_FIND",
   "RECURSION",
-  "SIMULATION",
-  "DESIGN",
   "MONOTONIC_STACK",
 ];
 
