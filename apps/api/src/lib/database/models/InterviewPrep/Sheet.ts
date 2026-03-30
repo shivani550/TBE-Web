@@ -1,3 +1,4 @@
+import { applyContentIdOnCreate } from "@tbe/utils";
 import { type Model, model, models, Schema } from "mongoose";
 
 import {
@@ -138,6 +139,8 @@ const InterviewSheetSchema = new Schema<InterviewSheetModel>(
     },
   },
 );
+
+applyContentIdOnCreate(InterviewSheetSchema);
 
 const InterviewSheet: Model<InterviewSheetModel> =
   models?.InterviewSheet ||

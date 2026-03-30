@@ -338,7 +338,7 @@ const DsaClient = () => {
     100,
     Math.round((solvedToday / expectedDailyQuestions) * 100),
   );
-  const todayTotalHours = (solvedToday / expectedDailyQuestions) * 4;
+  const todayTotalHours = solvedToday;
 
   const todayLog = weeklyLogs?.find(
     (log: any) =>
@@ -560,7 +560,7 @@ const DsaClient = () => {
 
           <StatCard
             title="Today's Progress"
-            value={todayTotalHours}
+            value={solvedToday}
             subtext="Questions solved today"
             icon={Code2}
             secondaryInfo={
@@ -577,13 +577,12 @@ const DsaClient = () => {
           />
           <StatCard
             title="Time Invested"
-            value={totalHours}
-            subtext="Hours total"
-            secondaryInfo={`Last: ${todayLog?.timeSpent || 0}m`}
+            value={(totalTimeSpent / 60).toFixed(1)}
+            subtext="Hours this week"
           />
           <StatCard
             title="Daily Goal"
-            value={`${todayTotalHours}/${dailyGoalHours}`}
+            value={`${todayTotalHours}`}
             subtext="Hours completed"
             progress={dailyGoalProgress}
           />
@@ -600,23 +599,26 @@ const DsaClient = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
             {topicProgress.length > 0 ? (
               topicProgress.map((topic) => (
-                <div
+                <Link
                   key={topic.key}
-                  className="bg-[#0f0f0f] border border-[#2a2a2a] p-4 rounded-lg text-center cursor-pointer hover:border-[#ff5757] transition-all group"
+                  href={`/sheets?topic=${topic.key}`}
+                  className="block"
                 >
-                  <p className="text-xs font-bold text-[#e0e0e0] uppercase">
-                    {topic.name}
-                  </p>
-                  <p className="text-[10px] text-[#a0a0a0] my-1.5">
-                    {topic.solved}/{topic.total}
-                  </p>
-                  <Progress
-                    value={
-                      topic.total > 0 ? (topic.solved / topic.total) * 100 : 0
-                    }
-                    className="h-1.5 bg-[#1a1a1a] rounded"
-                  />
-                </div>
+                  <div className="bg-[#0f0f0f] border border-[#2a2a2a] p-4 rounded-lg text-center cursor-pointer hover:border-[#ff5757] transition-all group">
+                    <p className="text-xs font-bold text-[#e0e0e0] uppercase">
+                      {topic.name}
+                    </p>
+                    <p className="text-[10px] text-[#a0a0a0] my-1.5">
+                      {topic.solved}/{topic.total}
+                    </p>
+                    <Progress
+                      value={
+                        topic.total > 0 ? (topic.solved / topic.total) * 100 : 0
+                      }
+                      className="h-1.5 bg-[#1a1a1a] rounded"
+                    />
+                  </div>
+                </Link>
               ))
             ) : (
               <div className="col-span-full text-center py-6">
