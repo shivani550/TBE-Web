@@ -113,4 +113,16 @@ export const DSA_STUDY_GUIDE_CONFIGS: Record<string, StudyGuideConfig> = {
       { id: "cheat-sheet", label: "Cheat sheet" },
     ],
   },
+  DYNAMIC_PROGRAMMING: {
+    topic: "Dynamic Programming",
+    hasStudyGuide: true,
+    sections: [
+      { id: "before-you-start", label: "Introduction" },
+      { id: "knapsack-fundamentals", label: "Knapsack Fundamentals" },
+      { divider: "Patterns" },
+      { id: "01-knapsack-pattern", label: "0/1 Knapsack Pattern" },
+      { divider: null },
+      { id: "cheat-sheet", label: "Cheat sheet" },
+    ],
+  },
 };
